@@ -3,18 +3,14 @@ const mongoose = require('mongoose');
 const { PORT, DB_URL } = require('./configs');
 const app = express();
 
-mongoose.connect(DB_URL);
+app.use(express.json())
 
-const db = mongoose.connection;
+mongoose.connect(DB_URL).then(() => {
+  console.log('db connected')
+}).catch(err => console.log('error conncecting database:' + err.message));
 
-
-db.on('error', err => {
-  console.log(err);
-});
-
-db.once('connected', () => {
-  console.log('db connected');
-});
+// routes
+require('./routes/auth.route')(app);
 
 app.listen(PORT, () => {
   console.log('listening on port : ' + PORT);
