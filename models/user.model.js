@@ -28,6 +28,14 @@ const userSchema = new Schema({
     type: String,
     default: 'APPROVED'
   },
+  ticketsCreated: {
+    type: [Schema.Types.ObjectId],
+    ref: 'Ticket'
+  },
+  ticketsAssigned: {
+    type: [Schema.Types.ObjectId],
+    ref: 'Ticket'
+  },
 },
   {
     timestamps: true
