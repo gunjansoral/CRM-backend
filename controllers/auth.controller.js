@@ -50,40 +50,47 @@ exports.signUp = async (req, res) => {
   }
 }
 
-exports.logIn = async (req, res) => {
+exports.signIn = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { userId, password } = req.body
 
     // find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ userId });
 
-    // check if password is correct
-    if (user) {
-      if (bcrypt.compare(user.password, password)) {
-        // generate token
-        const token = jwt.sign({ email }, jwtSecret);
-
-        // send response to client
-        const response = {
-          name: user.name,
-          email: user.email,
-          userId: user.userId,
-          userType: user.userType,
-          userStatus: user.userStatus,
-          token
-        }
-        return res.status(200).send(response)
-      } else {
-        return res.status(404).send({
-          message: 'invalid password'
-        })
-      }
-    } else {
+    // check if user doesn't exists
+    if (!user) {
       return res.status(404).send({
         message: "user doesn't exists, please sign up!"
       })
     }
 
+    // check user status
+    if (user.userStatus !== constants.userStatus.approved)
+      return res.status(200).send({
+        message: "user with status " + user.userStatus + " is not approved"
+      })
+
+    // check password
+    const checkPass = await bcrypt.compare(password, user.password)
+    if (!checkPass) {
+      return res.status(404).send({
+        message: 'invalid password'
+      })
+    }
+
+    // generate token
+    const token = jwt.sign({ id: userId }, jwtSecret, { expiresIn: '7d' });
+
+    // send response to client
+    const response = {
+      name: user.name,
+      email: user.email,
+      userId: user.userId,
+      userType: user.userType,
+      userStatus: user.userStatus,
+      token
+    }
+    return res.status(200).send(response);
   } catch (err) {
     console.log(err);
     res.status(500).send({
