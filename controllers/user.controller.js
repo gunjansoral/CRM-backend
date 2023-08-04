@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const constants = require('../utils/constants');
 const { userResponse } = require('../utils/objectMassager');
 
 exports.findAll = async (req, res) => {
@@ -33,16 +34,16 @@ exports.findAll = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const userId = req.params.id
-
+    const { name, userType, userStatus } = req.body;
     // find user by user id
     const user = await User.findOne({ userId });
     if (!user) return res.status(403).send({
       message: 'user not found'
     })
 
-    user.name = req.body.name != undefined ? req.body.name : user.name;
-    user.userType = req.body.userType != undefined ? req.body.userType : user.userType;
-    user.userStatus = req.body.userStatus != undefined ? req.body.userStatus : user.userStatus;
+    user.name = name != undefined ? name : user.name;
+    user.userType = userType != undefined ? userType : user.userType;
+    user.userStatus = userStatus != undefined ? userStatus : user.userStatus;
 
     const updatedUser = await user.save();
     res.status(200).send({
@@ -54,7 +55,7 @@ exports.update = async (req, res) => {
     })
   } catch (error) {
     console.log(error);
-    res.staus(500).send({
+    res.status(500).send({
       message: 'Internal server error'
     })
   }

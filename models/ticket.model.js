@@ -20,7 +20,7 @@ const ticketSchema = new Schema({
     default: 'OPEN'
   },
   reporter: {
-    ttype: String
+    type: String
   },
   assignee: {
     type: String
