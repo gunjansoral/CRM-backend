@@ -50,10 +50,14 @@ exports.isAdmin = async (req, res, next) => {
 exports.isAdminOrOwner = async (req, res, next) => {
   try {
     const callingUser = await User.findOne({ userId: req.userId })
-    if (req.body.userType === constants.userType.admin || callingUser.userId === req.params.id) {
-      if (req.body.userType !== constants.userType.admin) return res.status(403).send({
-        message: `only ${constants.userType.admin}s are allowed`
+
+    if (callingUser.userType != constants.userType.admin) {
+      if (req.body.userStatus) return res.status(403).send({
+        message: `only ${constants.userType.admin}s are allowed to update th user status`
       })
+    }
+
+    if (callingUser.userType == constants.userType.admin || callingUser.userId == req.params.id) {
       next()
     } else {
       res.status(403).send({
