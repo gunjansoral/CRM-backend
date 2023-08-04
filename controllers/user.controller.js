@@ -2,7 +2,7 @@ const User = require('../models/user.model');
 const constants = require('../utils/constants');
 const { userResponse } = require('../utils/objectMassager');
 
-exports.findAll = async (req, res) => {
+exports.findAllUsers = async (req, res) => {
   try {
     const queryObj = {};
     const userStatus = req.query.userStatus;
@@ -31,7 +31,35 @@ exports.findAll = async (req, res) => {
   }
 }
 
-exports.update = async (req, res) => {
+exports.findOneUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // find user by userId
+    const user = await User.findOne({ userId })
+    if (!user) return res.status(403).send({
+      message: 'No user exists with id:' + userId
+    })
+
+    // send user to client
+    const response = {
+      name: user.name,
+      email: user.email,
+      userType: user.userType,
+      userStatus: user.userStatus,
+      ticketsCreated: user.ticketsCreated,
+      ticketsAssigned: user.ticketsAssigned
+    }
+    res.status(200).send(response);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({
+      message: 'Internal server error'
+    })
+  }
+}
+
+exports.updateUser = async (req, res) => {
   try {
     const userId = req.params.id
     const { name, userType, userStatus } = req.body;

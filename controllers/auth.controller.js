@@ -10,7 +10,7 @@ exports.signUp = async (req, res) => {
 
     // status check
     if (!userStatus) {
-      if (userType == constants.userType.customoer) {
+      if (userType == constants.userType.customer) {
         userStatus = constants.userStatus.approved;
       } else {
         userStatus = constants.userStatus.pending;
@@ -54,7 +54,7 @@ exports.signIn = async (req, res) => {
   try {
     const { userId, password } = req.body
 
-    // find user by email
+    // find user by userId
     const user = await User.findOne({ userId });
 
     // check if user doesn't exists

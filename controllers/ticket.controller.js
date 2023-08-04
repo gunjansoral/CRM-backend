@@ -64,12 +64,36 @@ exports.getTickets = async (req, res) => {
 
     // find user with userId
     const user = await User.findOne({ userId });
+    if (!user) return res.status(404).send({
+      message: 'User not found'
+    });
+
+    // if user is engineer
     if (user.userType === constants.userType.engineer) {
-      tickets = await Ticket.find({ assignee: userId })
+      tickets.push(...await Ticket.find({ assignee: userId }));
     }
 
+    // if user is customer
     if (user.userType === constants.userType.customer) {
-      tickets = await Ticket.find({ reporter: userId })
+      tickets.push(...await Ticket.find({ reporter: userId }));
+    }
+
+    // if user is admin
+    if (user.userType === constants.userType.admin) {
+      // filters 
+      const { title, ticketPriority, status, reporter, assignee } = req.query;
+
+      // query object for filter
+      const queryObj = {};
+
+      if (title) queryObj.title = title;
+      if (ticketPriority) queryObj.ticketPriority = ticketPriority;
+      if (status) queryObj.status = status;
+      if (reporter) queryObj.reporter = reporter;
+      if (assignee) queryObj.assignee = assignee;
+
+      tickets = await Ticket.find(queryObj);
+      console.log(tickets)
     }
 
     res.status(200).send(tickets);
@@ -77,6 +101,27 @@ exports.getTickets = async (req, res) => {
     console.log(error);
     res.status(500).send({
       message: 'Internal server error'
+    })
+  }
+}
+
+exports.getTicketStatus = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    // find ticket with _id
+    const ticket = await Ticket.findOne({ _id });
+    if (!ticket) return res.status(404).send({
+      message: "No such ticket found with the provided id."
+    })
+
+    res.status(200).send({
+      status: ticket.status
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      message: "Internal server error"
     })
   }
 }
@@ -90,7 +135,7 @@ exports.updateTicket = async (req, res) => {
     const { userId } = req;
     const user = await User.findOne({ userId });
 
-    // approved user or approved engineer can update ticket
+    // approved customer or approved engineer can update ticket
     if (user.userStatus !== constants.userStatus.approved) return res.status(403).send({
       message: `Only ${constants.userStatus.approved} ${user.userStatus} can update tickets`
     })
