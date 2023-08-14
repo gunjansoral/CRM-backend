@@ -93,7 +93,6 @@ exports.getTickets = async (req, res) => {
       if (assignee) queryObj.assignee = assignee;
 
       tickets = await Ticket.find(queryObj);
-      console.log(tickets)
     }
 
     res.status(200).send(tickets);
